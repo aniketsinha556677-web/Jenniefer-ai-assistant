@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JENNIFER — Intelligent AI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════ TITLEBAR ══════════════════════ -->
+<div class="titlebar" id="titlebar">
+  <div class="titlebar-drag">
+    <span class="titlebar-logo">⬡</span>
+    <span class="titlebar-title">JENNIFER</span>
+    <span class="titlebar-sub">UNIVERSAL PERSONAL AI ASSISTANT</span>
+  </div>
+  <div class="titlebar-controls">
+    <button class="ctrl-btn minimize" id="btn-minimize" title="Minimize">─</button>
+    <button class="ctrl-btn maximize" id="btn-maximize" title="Maximize">□</button>
+    <button class="ctrl-btn close"    id="btn-close"    title="Close">✕</button>
+  </div>
+</div>
+
+<!-- ══════════════════════ MAIN LAYOUT ══════════════════════ -->
+<div class="app-layout">
+
+  <!-- LEFT PANEL -->
+  <aside class="panel panel-left">
+    <div class="panel-header">SYSTEM STATUS</div>
+    <div class="stat-item">
+      <span class="stat-label">OPERATOR</span>
+      <span class="stat-value" id="stat-user">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">PLATFORM</span>
+      <span class="stat-value" id="stat-platform">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">CPU</span>
+      <span class="stat-value" id="stat-cpu">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">MEMORY</span>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar" id="stat-mem-bar"></div>
+      </div>
+      <span class="stat-value small" id="stat-mem">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">UPTIME</span>
+      <span class="stat-value small" id="stat-uptime">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">NETWORK</span>
+      <span class="stat-value" id="stat-network">—</span>
+    </div>
+
+    <div class="divider"></div>
+    <div class="panel-header">LIVE CLOCK</div>
+    <div class="live-time" id="live-time">00:00:00</div>
+    <div class="live-date" id="live-date">Loading...</div>
+    <div class="live-tz" id="live-tz"></div>
+
+    <div class="divider"></div>
+    <div class="panel-header">ASSISTANT TASKS</div>
+    <div class="quick-cmds">
+      <button class="qcmd" data-cmd="Explain quantum computing with an example">🔬 Research Topic</button>
+      <button class="qcmd" data-cmd="Write a Python script to download files asynchronously">💻 Write Code</button>
+      <button class="qcmd" data-cmd="What is the weather?">🌦 Live Weather</button>
+      <button class="qcmd" data-cmd="Calculate (150 * 12) / 4 + 85">🔢 Solve Math</button>
+      <button class="qcmd" data-cmd="Set a timer for 5 minutes">⏱ Set 5m Timer</button>
+      <button class="qcmd" data-cmd="Show system info">📊 System Specs</button>
+      <button class="qcmd" data-cmd="Open YouTube">▶ Open YouTube</button>
+      <button class="qcmd" data-cmd="What time is it?">⏰ Current Time</button>
+      <button class="qcmd" data-cmd="What can you do?">❓ All Capabilities</button>
+    </div>
+  </aside>
+
+  <!-- CENTER MAIN -->
+  <main class="center-main">
+
+    <!-- HUD RING -->
+    <div class="hud-container">
+      <div class="hud-ring hud-ring-outer"></div>
+      <div class="hud-ring hud-ring-mid"></div>
+      <div class="hud-ring hud-ring-inner"></div>
+      <div class="arc-reactor" id="arc-reactor">
+        <div class="arc-core"></div>
+        <div class="arc-glow"></div>
+      </div>
+      <div class="hud-status" id="hud-status">STANDBY</div>
+      <canvas class="wave-canvas" id="wave-canvas"></canvas>
+    </div>
+
+    <!-- CONVERSATION FEED -->
+    <div class="convo-feed" id="convo-feed">
+      <div class="msg jarvis-msg boot-msg">
+        <div class="msg-icon">⬡</div>
+        <div class="msg-bubble">
+          <span class="msg-sender">JENNIFER</span>
+          <p>Online and fully operational. I am <strong>Jennifer</strong> — your universal AI assistant. I can answer any question across science, coding, math, general research, and philosophy, as well as execute tasks, launch apps, solve equations, and control your system. How may I assist you?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="input-zone">
+      <div class="input-wrap">
+        <span class="input-prefix">▷</span>
+        <input
+          type="text"
+          id="text-input"
+          class="text-input"
+          placeholder="Ask any question or assign any task..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="send-btn" id="send-btn" title="Send Command">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+      <button class="mic-btn" id="mic-btn" title="Voice Command">
+        <div class="mic-icon">🎙</div>
+        <div class="mic-rings">
+          <div class="mic-ring r1"></div>
+          <div class="mic-ring r2"></div>
+          <div class="mic-ring r3"></div>
+        </div>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="panel panel-right">
+    <div class="panel-header">AI CORE STATUS</div>
+    <div class="ai-status-indicator">
+      <div class="ai-dot" id="ai-dot"></div>
+      <span id="ai-status-text">READY</span>
+    </div>
+
+    <!-- ─── GROK NEURAL CORE SECTION ─── -->
+    <div class="grok-section">
+      <div class="grok-header-row">
+        <div class="grok-title-group">
+          <span class="grok-title">GROK NEURAL CORE</span>
+          <span class="grok-sub">xAI Intelligence Engine</span>
+        </div>
+        <button class="grok-cfg-toggle" id="grok-cfg-toggle" title="Toggle Grok API Configuration">
+          ⚙ Config
+        </button>
+      </div>
+
+      <div class="grok-status-badge disconnected" id="grok-badge">
+        <span class="grok-dot"></span>
+        <span id="grok-badge-text">INITIALIZING...</span>
+      </div>
+
+      <div class="grok-info-row">
+        <span class="grok-info-label">MODEL:</span>
+        <span class="grok-info-val" id="grok-active-model">grok-2-latest</span>
+      </div>
+
+      <!-- Expandable Config Drawer -->
+      <div class="grok-drawer" id="grok-drawer">
+        <div class="grok-field-label">GROK API KEY (xAI):</div>
+        <div class="grok-key-wrap">
+          <input
+            type="password"
+            id="grok-key-input"
+            class="grok-input"
+            placeholder="Paste xai-... or set in .env"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="button" id="grok-toggle-vis-btn" class="grok-vis-btn" title="Show / Hide Key">👁</button>
+        </div>
+
+        <div class="grok-field-label">MODEL SELECTION:</div>
+        <select id="grok-model-select" class="grok-select">
+          <option value="grok-2-latest">grok-2-latest (Recommended)</option>
+          <option value="grok-beta">grok-beta</option>
+          <option value="grok-2-1212">grok-2-1212</option>
+          <option value="grok-vision-beta">grok-vision-beta</option>
+        </select>
+
+        <div class="grok-action-btns">
+          <button id="grok-save-btn" class="grok-btn primary">
+            💾 Save Link
+          </button>
+          <button id="grok-test-btn" class="grok-btn secondary">
+            ⚡ Test Link
+          </button>
+        </div>
+        <div class="grok-feedback" id="grok-feedback"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="panel-header">VOICE &amp; ACTIVATION</div>
+    <div class="voice-info">
+      <div class="vi-row">
+        <span class="vi-label">ENGINE STATUS</span>
+        <span class="vi-val" id="voice-status">STANDBY</span>
+      </div>
+      <div class="vi-row">
+        <span class="vi-label">CONFIDENCE</span>
+        <span class="vi-val" id="voice-conf">—</span>
+      </div>
+      <div class="vi-row">
+        <span class="vi-label">LAST HEARD</span>
+        <span class="vi-val small" id="voice-last">—</span>
+      </div>
+    </div>
+
+    <!-- ─── WAKE WORD ACTIVATION SECTION ─── -->
+    <div class="wake-section">
+      <div class="wake-toggle-row">
+        <div class="wake-toggle-label">
+          <span class="wake-title">WAKE WORD ACTIVATION</span>
+          <span class="wake-desc">Say word to wake Jennifer</span>
+        </div>
+        <label class="hud-switch" title="Toggle automatic wake word listening">
+          <input type="checkbox" id="wake-toggle" checked />
+          <span class="hud-slider"></span>
+        </label>
+      </div>
+
+      <div class="wake-status-badge active" id="wake-badge">
+        <span class="badge-dot"></span>
+        <span id="wake-badge-text">LISTENING FOR ACTIVATION</span>
+      </div>
+
+      <div class="wake-sub-header">
+        <span>ACTIVATION WORDS</span>
+        <span class="wake-count" id="wake-count">3 active</span>
+      </div>
+      <div class="wake-chips-container" id="wake-chips">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="wake-input-row">
+        <input type="text" id="custom-wake-input" class="wake-input" placeholder="Add word (e.g. jarvis)..." maxlength="30" />
+        <button id="add-wake-btn" class="wake-add-btn" title="Add activation word">+</button>
+      </div>
+
+      <div class="wake-presets">
+        <span class="preset-label">PRESETS:</span>
+        <div class="preset-btns">
+          <button class="preset-btn" data-word="Jennifer">+ Jennifer</button>
+          <button class="preset-btn" data-word="Hey Jennifer">+ Hey Jennifer</button>
+          <button class="preset-btn" data-word="Jarvis">+ Jarvis</button>
+          <button class="preset-btn" data-word="Computer">+ Computer</button>
+        </div>
+      </div>
+
+      <div class="wake-audio-controls">
+        <button class="wake-test-btn" id="wake-test-btn" title="Test Jennifer wake-up sound & visual effect">
+          <span>🔔</span> Test Wake Chime
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── VOICE SAMPLE & MIC CALIBRATION STUDIO ─── -->
+    <div class="divider"></div>
+    <div class="panel-header">VOICE SAMPLE &amp; CALIBRATION</div>
+    <div class="voice-sample-box">
+      <div class="vs-desc">Calibrate your mic &amp; verify what Jennifer hears:</div>
+
+      <button class="vs-record-btn" id="vs-record-btn">
+        <span class="vs-rec-dot"></span>
+        <span id="vs-record-label">🎙 Record Voice Sample (4s)</span>
+      </button>
+
+      <div class="vs-meter-wrap">
+        <div class="vs-meter-label">
+          <span>MIC VOLUME LEVEL:</span>
+          <span id="vs-vol-val">0%</span>
+        </div>
+        <div class="vs-meter-bar-bg">
+          <div class="vs-meter-bar" id="vs-meter-bar"></div>
+        </div>
+      </div>
+
+      <div class="vs-playback-row" id="vs-playback-row" style="display: none;">
+        <button class="vs-play-btn" id="vs-play-btn">▶ Play Sample</button>
+        <audio id="vs-audio-player" style="display: none;"></audio>
+      </div>
+
+      <div class="vs-result-card" id="vs-result-card" style="display: none;">
+        <div class="vs-rc-label">RECOGNIZED SPEECH:</div>
+        <div class="vs-rc-text" id="vs-rc-text">—</div>
+        <div class="vs-rc-conf" id="vs-rc-conf">Accuracy: —</div>
+      </div>
+
+      <button class="vs-train-btn" id="vs-train-btn" title="Launch Windows Voice Training wizard to train your computer to your accent">
+        <span>🎯</span> Train Windows Speech on My Voice
+      </button>
+    </div>
+
+
+
+    <div class="divider"></div>
+    <div class="panel-header">CAPABILITIES</div>
+    <ul class="cap-list">
+      <li>⚡ Grok AI Deep Reasoning</li>
+      <li>🕐 Time &amp; Date</li>
+      <li>🌍 Weather Lookup</li>
+      <li>🔢 Math &amp; Calculations</li>
+      <li>😂 Jokes &amp; Riddles</li>
+      <li>📖 General Knowledge</li>
+      <li>🌐 Open Websites</li>
+      <li>💻 System Stats</li>
+      <li>⏱ Set Timers</li>
+      <li>📰 Latest News</li>
+      <li>📐 Unit Conversion</li>
+      <li>🎵 Play Music</li>
+      <li>🌟 Motivational Quotes</li>
+    </ul>
+
+    <div class="divider"></div>
+    <div class="panel-header">SESSION LOG</div>
+    <div class="session-log" id="session-log">Session started...</div>
+  </aside>
+
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<script src="brain.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "jarvis-agent",
+  "version": "1.0.0",
+  "description": "JENNIFER — Intelligent Personal AI Assistant",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder"
+  },
+  "keywords": ["jennifer", "ai", "assistant", "electron", "voice"],
+  "author": "You",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "node-fetch": "^2.7.0"
+  }
+}
