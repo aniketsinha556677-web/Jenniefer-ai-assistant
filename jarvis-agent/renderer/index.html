@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jennifer AI</title>
+  <title>Jennifer AI — Playground</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -11,253 +11,216 @@
 </head>
 <body>
 
-  <!-- ══════════════════════ FLUTED GLASS BACKDROP ══════════════════════ -->
-  <div class="glass-backdrop" id="glass-backdrop">
-    <div class="glass-refraction-overlay"></div>
-    <div class="glass-light-accent"></div>
-  </div>
+  <!-- ══════════════════════ DOTTED MATRIX BACKDROP ══════════════════════ -->
+  <div class="matrix-backdrop"></div>
 
-  <!-- ══════════════════════ MAIN WORKSPACE ══════════════════════ -->
-  <div class="app-stage" id="app-stage">
+  <!-- ══════════════════════ FLOATING CHAT CARD WIDGET ══════════════════════ -->
+  <main class="chat-card-wrapper">
+    <div class="chat-card" id="chat-card">
 
-    <!-- ── TOP COMPACT HEADER / DRAG HANDLE ── -->
-    <header class="island-topbar" id="titlebar">
-      <div class="topbar-drag">
-        <span class="jennifer-badge">
-          <span class="pulse-dot" id="ai-dot"></span>
-          <span class="brand-name">JENNIFER</span>
-          <span class="model-tag" id="grok-active-model">Groq 120B</span>
-        </span>
-      </div>
-      <div class="topbar-actions">
-        <button class="topbar-btn" id="btn-minimize" title="Minimize">
-          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2"/></svg>
-        </button>
-        <button class="topbar-btn" id="btn-maximize" title="Maximize / Restore">
-          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-        </button>
-      </div>
-    </header>
+      <!-- Ambient Side Glow Bloom (matches reference screenshot) -->
+      <div class="card-ambient-bloom"></div>
 
-    <!-- ── EXPANDABLE RESPONSE ISLAND (COLLAPSED BY DEFAULT) ── -->
-    <section class="response-island" id="response-island" aria-hidden="true">
-      <div class="island-header">
-        <div class="island-status">
-          <span class="status-indicator-dot"></span>
-          <span class="status-text" id="ai-status-text">READY</span>
-        </div>
-        <div class="island-controls">
-          <button class="icon-action-btn" id="btn-speak-toggle" title="Read response aloud">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-            </svg>
-          </button>
-          <button class="icon-action-btn" id="btn-copy-answer" title="Copy response">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
-          <button class="icon-action-btn" id="btn-clear-feed" title="Clear conversation">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-          </button>
-          <button class="icon-action-btn collapse-btn" id="btn-collapse-island" title="Collapse view">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Scrollable Message Conversation Stream -->
-      <div class="convo-feed" id="convo-feed">
-        <div class="msg jarvis-msg boot-msg">
-          <div class="msg-author">
-            <span class="author-dot"></span>
-            <span class="msg-sender">JENNIFER</span>
+      <!-- ── TOPBAR HEADER ── -->
+      <header class="card-header" id="titlebar">
+        <div class="agent-profile" id="agent-profile-btn" title="Click to view model & settings">
+          <div class="pearl-orb header-orb">
+            <div class="orb-specular"></div>
           </div>
-          <div class="msg-body">
-            <p>I am <strong>Jennifer</strong>. What would you like to explore, create, or accomplish today?</p>
+          <div class="agent-info">
+            <div class="agent-name-row">
+              <span class="agent-name">Jennifer AI</span>
+              <span class="agent-live-dot" id="ai-dot" title="Active"></span>
+            </div>
+            <span class="agent-sub" id="agent-sub">Playground</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Model badge / trigger -->
+          <button class="hdr-btn model-btn" id="pill-plus-btn" title="Model Selector & Settings">
+            <span id="grok-active-model">Groq 120B</span>
+            <span class="hdr-caret">▾</span>
+          </button>
+
+          <!-- Refresh / Reset Chat (matches reference icon) -->
+          <button class="hdr-btn icon-btn" id="btn-refresh" title="Reset Conversation">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.19"/>
+            </svg>
+          </button>
+
+          <!-- Minimize / Close (Electron) -->
+          <button class="hdr-btn icon-btn" id="btn-minimize" title="Minimize">
+            <svg viewBox="0 0 24 24" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+          <button class="hdr-btn icon-btn" id="btn-close" title="Close Window">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- ── CONVERSATION STREAM ── -->
+      <div class="chat-feed" id="convo-feed">
+        <!-- Default Welcome / Agent First Message (matches screenshot layout) -->
+        <div class="msg jarvis-msg">
+          <div class="pearl-orb msg-orb">
+            <div class="orb-specular"></div>
+          </div>
+          <div class="msg-content">
+            Hey there! I am Jennifer, your autonomous AI assistant. All neural systems are online. How can I assist you with your research, code, or tasks today?
           </div>
         </div>
       </div>
 
-      <!-- Quick Suggestion Pills -->
-      <div class="quick-prompts-bar" id="quick-prompts-bar">
-        <button class="prompt-chip qcmd" data-cmd="Explain quantum computing simply">🔬 Explain Quantum Computing</button>
-        <button class="prompt-chip qcmd" data-cmd="Write an async fetch script in JavaScript">💻 Code Snippet</button>
-        <button class="prompt-chip qcmd" data-cmd="What is the weather today?">🌦 Weather</button>
-        <button class="prompt-chip qcmd" data-cmd="Calculate 1450 * 18.5">🔢 Math Calculation</button>
-        <button class="prompt-chip qcmd" data-cmd="What can you do?">✨ Capabilities</button>
+      <!-- ── THINKING INDICATOR (SHOWN DURING GENERATION) ── -->
+      <div class="thinking-row" id="thinking-row" style="display: none;">
+        <div class="pearl-orb msg-orb pulsing-orb">
+          <div class="orb-specular"></div>
+        </div>
+        <div class="thinking-text">Thinking...</div>
       </div>
-    </section>
 
-    <!-- ── THE SLEEK FLOATING PILL BAR (EXACT REFERENCE DESIGN) ── -->
-    <div class="floating-bar-container" id="floating-bar-container">
-      
-      <!-- MAIN PILL -->
-      <div class="ai-pill" id="ai-pill">
-        <!-- PLUS ACTION BUTTON -->
-        <button class="pill-btn plus-btn" id="pill-plus-btn" title="Open AI Settings & Tools" aria-label="Open Tools">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </button>
-
-        <!-- TEXT INPUT -->
-        <div class="pill-input-wrap">
+      <!-- ── BOTTOM INPUT PILL (EXACT LAYOUT FROM REFERENCE) ── -->
+      <footer class="card-footer">
+        <div class="input-pill" id="input-pill">
+          <!-- Text Input Field -->
           <input
             type="text"
             id="text-input"
-            class="pill-input"
-            placeholder="Ask AI"
+            class="agent-input"
+            placeholder="Ask the agent"
             autocomplete="off"
             spellcheck="false"
           />
+
+          <!-- Right Action Controls: Mic & Upward Arrow Send Button -->
+          <div class="input-actions">
+            <!-- Microphone Button -->
+            <button class="input-icon-btn mic-btn" id="mic-btn" title="Voice Input (or say 'Hey Jennifer')" aria-label="Microphone">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+                <line x1="8" y1="22" x2="16" y2="22"></line>
+              </svg>
+            </button>
+
+            <!-- Circular Upward Send Arrow (matches reference) -->
+            <button class="send-arrow-btn" id="send-btn" title="Send (Enter)" aria-label="Send">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            </button>
+          </div>
         </div>
+      </footer>
 
-        <!-- RIGHT ACTIONS: MIC & WAVEFORM -->
-        <div class="pill-right-actions">
-          <!-- MICROPHONE BUTTON -->
-          <button class="pill-btn mic-btn" id="mic-btn" title="Click or say 'Hey Jennifer' to talk" aria-label="Voice Input">
-            <svg class="mic-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="22"></line>
-              <line x1="8" y1="22" x2="16" y2="22"></line>
-            </svg>
-            <span class="mic-glow-ring"></span>
-          </button>
+      <!-- ── MODEL & SETTINGS MODAL POPOVER ── -->
+      <div class="model-popover" id="menu-popover" aria-hidden="true">
+        <div class="popover-inner">
+          <div class="pop-row-title">
+            <span>NEURAL CORE SETTINGS</span>
+            <span class="badge-online" id="grok-badge">
+              <span class="badge-dot"></span>
+              <span id="grok-badge-text">Groq Cloud</span>
+            </span>
+          </div>
 
-          <!-- AUDIO WAVEFORM BUTTON / EQUALIZER BARS -->
-          <button class="pill-btn wave-btn" id="wave-btn" title="Voice Waveform Visualizer" aria-label="Audio Visualizer">
-            <div class="eq-bars-wrap" id="eq-bars">
-              <span class="eq-bar bar-1"></span>
-              <span class="eq-bar bar-2"></span>
-              <span class="eq-bar bar-3"></span>
-              <span class="eq-bar bar-4"></span>
-              <span class="eq-bar bar-5"></span>
+          <div class="pop-field">
+            <label class="pop-label" for="grok-model-select">ACTIVE MODEL</label>
+            <select id="grok-model-select" class="pop-select">
+              <option value="openai/gpt-oss-120b" selected>GPT OSS 120B (Groq - High Intelligence)</option>
+              <option value="qwen/qwen3.8-27b">Qwen 3.8 27B (Groq - Ultra Fast)</option>
+              <option value="openai/gpt-oss-20b">GPT OSS 20B (Groq - Efficient)</option>
+              <option value="grok-2-latest">Grok 2 (xAI - Recommended)</option>
+            </select>
+          </div>
+
+          <div class="pop-field row-between">
+            <div>
+              <div class="pop-h2">Wake Word ("Hey Jennifer")</div>
+              <div class="pop-desc">Listen in background</div>
             </div>
-          </button>
+            <label class="toggle-switch">
+              <input type="checkbox" id="wake-toggle" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pop-field row-between">
+            <div>
+              <div class="pop-h2">Voice Readout (TTS)</div>
+              <div class="pop-desc">Speak replies automatically</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="speech-toggle" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pop-field">
+            <button class="btn-api-toggle" id="grok-cfg-toggle">
+              <span>⚙ API Key Configuration</span>
+              <span>▾</span>
+            </button>
+            <div class="grok-drawer" id="grok-drawer">
+              <div class="key-input-row">
+                <input
+                  type="password"
+                  id="grok-key-input"
+                  class="key-input"
+                  placeholder="Paste gsk_... or xai-..."
+                  autocomplete="off"
+                />
+                <button type="button" id="grok-toggle-vis-btn" class="vis-btn">👁</button>
+              </div>
+              <div class="drawer-btn-row">
+                <button id="grok-save-btn" class="drw-btn primary">💾 Save</button>
+                <button id="grok-test-btn" class="drw-btn secondary">⚡ Test</button>
+              </div>
+              <div class="grok-feedback" id="grok-feedback"></div>
+            </div>
+          </div>
+
+          <div class="sys-summary">
+            <div class="sys-item"><span>USER</span><strong id="stat-user">Operator</strong></div>
+            <div class="sys-item"><span>PLATFORM</span><strong id="stat-platform">Windows</strong></div>
+            <div class="sys-item"><span>CPU</span><strong id="stat-cpu">—</strong></div>
+            <div class="sys-item"><span>RAM</span><strong id="stat-mem">—</strong></div>
+          </div>
         </div>
       </div>
-
-      <!-- SEPARATE CIRCULAR CLOSE BUTTON (X) -->
-      <button class="pill-close-circle" id="btn-close" title="Close / Dismiss" aria-label="Close">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
 
     </div>
+  </main>
 
-    <!-- ── POPUP MENU DRAWER (OPENED VIA '+') ── -->
-    <div class="menu-popover" id="menu-popover" aria-hidden="true">
-      <div class="popover-header">
-        <span class="popover-title">AI ASSISTANT SETTINGS</span>
-        <span class="grok-status-badge connected" id="grok-badge">
-          <span class="grok-dot"></span>
-          <span id="grok-badge-text">GROQ CLOUD (ONLINE)</span>
-        </span>
-      </div>
-
-      <!-- Model Selection -->
-      <div class="popover-section">
-        <label class="pop-label" for="grok-model-select">ACTIVE NEURAL MODEL</label>
-        <select id="grok-model-select" class="pop-select">
-          <option value="openai/gpt-oss-120b" selected>GPT OSS 120B (Groq - High Intelligence)</option>
-          <option value="qwen/qwen3.8-27b">Qwen 3.8 27B (Groq - Ultra Fast)</option>
-          <option value="openai/gpt-oss-20b">GPT OSS 20B (Groq - Efficient)</option>
-          <option value="grok-2-latest">Grok 2 (xAI - Recommended)</option>
-        </select>
-      </div>
-
-      <!-- Continuous Wake Word -->
-      <div class="popover-section row-split">
-        <div>
-          <div class="pop-heading">Wake Word ("Hey Jennifer")</div>
-          <div class="pop-sub">Listen continuously in background</div>
-        </div>
-        <label class="hud-switch">
-          <input type="checkbox" id="wake-toggle" checked />
-          <span class="hud-slider"></span>
-        </label>
-      </div>
-
-      <!-- Speech Mute Toggle -->
-      <div class="popover-section row-split">
-        <div>
-          <div class="pop-heading">Voice Synthesis (TTS)</div>
-          <div class="pop-sub">Read answers aloud automatically</div>
-        </div>
-        <label class="hud-switch">
-          <input type="checkbox" id="speech-toggle" checked />
-          <span class="hud-slider"></span>
-        </label>
-      </div>
-
-      <!-- Expandable API Key Setup -->
-      <div class="popover-section">
-        <button class="pop-toggle-btn" id="grok-cfg-toggle">
-          <span>⚙ API Key Configuration</span>
-          <span class="arrow-indicator">▾</span>
-        </button>
-
-        <div class="grok-drawer" id="grok-drawer">
-          <div class="pop-label">API KEY (Groq or xAI):</div>
-          <div class="grok-key-wrap">
-            <input
-              type="password"
-              id="grok-key-input"
-              class="pop-input"
-              placeholder="Paste gsk_... or xai-..."
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <button type="button" id="grok-toggle-vis-btn" class="grok-vis-btn">👁</button>
-          </div>
-          <div class="drawer-actions">
-            <button id="grok-save-btn" class="drawer-btn primary">💾 Save Key</button>
-            <button id="grok-test-btn" class="drawer-btn secondary">⚡ Test Link</button>
-          </div>
-          <div class="grok-feedback" id="grok-feedback"></div>
-        </div>
-      </div>
-
-      <!-- System Telemetry Snapshot -->
-      <div class="popover-telemetry">
-        <div class="tel-item"><span class="tel-k">USER</span><span class="tel-v" id="stat-user">Operator</span></div>
-        <div class="tel-item"><span class="tel-k">PLATFORM</span><span class="tel-v" id="stat-platform">Windows</span></div>
-        <div class="tel-item"><span class="tel-k">CPU</span><span class="tel-v" id="stat-cpu">—</span></div>
-        <div class="tel-item"><span class="tel-k">MEMORY</span><span class="tel-v" id="stat-mem">—</span></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ══════════════════════ COMPATIBILITY HIDDEN REFS ══════════════════════ -->
+  <!-- ── HIDDEN SYSTEM FALLBACK ELEMENTS (Keeps brain.js 100% happy) ── -->
   <div style="display: none;" aria-hidden="true">
-    <button id="send-btn"></button>
+    <div id="btn-maximize"></div>
     <div id="arc-reactor"></div>
     <div id="hud-status">STANDBY</div>
+    <div id="ai-status-text">READY</div>
     <div id="voice-status">STANDBY</div>
     <div id="voice-conf">—</div>
     <div id="voice-last">—</div>
     <div id="session-log"></div>
     <canvas id="wave-canvas"></canvas>
+    <div id="wave-btn"></div>
     <div id="live-time"></div>
     <div id="live-date"></div>
     <div id="live-tz"></div>
     <div id="stat-mem-bar"></div>
     <div id="stat-uptime"></div>
     <div id="stat-network"></div>
+    <button id="btn-collapse-island"></button>
+    <button id="btn-clear-feed"></button>
+    <button id="btn-copy-answer"></button>
+    <button id="btn-speak-toggle"></button>
   </div>
 
   <!-- TOAST NOTIFICATION -->

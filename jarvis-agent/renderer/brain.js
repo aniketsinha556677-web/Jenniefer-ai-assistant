@@ -1110,65 +1110,45 @@ function initInput() {
     });
   }
 
-  // ── PILL PLUS BUTTON (POPOVER TOGGLE) ──
-  const plusBtn = $('pill-plus-btn');
-  const popover = $('menu-popover');
-  if (plusBtn && popover) {
-    plusBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = popover.classList.toggle('open');
-      plusBtn.classList.toggle('active', isOpen);
-      popover.setAttribute('aria-hidden', !isOpen);
-    });
+  // ── RESET / REFRESH CONVERSATION ──
+  $('btn-refresh')?.addEventListener('click', () => {
+    convoFeed.innerHTML = `
+      <div class="msg jarvis-msg">
+        <div class="pearl-orb msg-orb">
+          <div class="orb-specular"></div>
+        </div>
+        <div class="msg-content">
+          Hey there! I am Jennifer, your autonomous AI assistant. All neural systems are online. How can I assist you with your research, code, or tasks today?
+        </div>
+      </div>
+    `;
+    state.grok.history = [];
+    showToast('Conversation reset');
+  });
 
-    document.addEventListener('click', (e) => {
-      if (!popover.contains(e.target) && !plusBtn.contains(e.target) && popover.classList.contains('open')) {
+  // ── SETTINGS POPOVER TOGGLE ──
+  const popover = $('menu-popover');
+  const togglePopover = (e) => {
+    e?.stopPropagation();
+    if (popover) {
+      const isOpen = popover.classList.toggle('open');
+      popover.setAttribute('aria-hidden', !isOpen);
+    }
+  };
+
+  $('pill-plus-btn')?.addEventListener('click', togglePopover);
+  $('agent-profile-btn')?.addEventListener('click', togglePopover);
+
+  document.addEventListener('click', (e) => {
+    if (popover && popover.classList.contains('open')) {
+      if (!popover.contains(e.target) && !$('pill-plus-btn')?.contains(e.target) && !$('agent-profile-btn')?.contains(e.target)) {
         popover.classList.remove('open');
-        plusBtn.classList.remove('active');
         popover.setAttribute('aria-hidden', 'true');
       }
-    });
-  }
-
-  // ── WAVEFORM BUTTON (TOGGLE VOICE / SPEECH) ──
-  const waveBtn = $('wave-btn');
-  if (waveBtn) {
-    waveBtn.addEventListener('click', () => {
-      toggleListening();
-    });
-  }
-
-  // ── RESPONSE ISLAND ACTIONS ──
-  $('btn-collapse-island')?.addEventListener('click', () => {
-    const island = $('response-island');
-    if (island) {
-      island.classList.remove('visible');
-      island.setAttribute('aria-hidden', 'true');
     }
   });
 
-  $('btn-clear-feed')?.addEventListener('click', () => {
-    convoFeed.innerHTML = '';
-    const island = $('response-island');
-    if (island) island.classList.remove('visible');
-    showToast('Conversation cleared');
-  });
-
-  $('btn-copy-answer')?.addEventListener('click', () => {
-    if (state.lastAnswer) {
-      navigator.clipboard.writeText(state.lastAnswer);
-      showToast('✓ Response copied to clipboard!');
-    } else {
-      showToast('No response to copy yet');
-    }
-  });
-
-  $('btn-speak-toggle')?.addEventListener('click', () => {
-    if (state.lastAnswer) {
-      speak(state.lastAnswer);
-    }
-  });
-
+  // ── VOICE SPEECH TOGGLE ──
   $('speech-toggle')?.addEventListener('change', (e) => {
     state.muted = !e.target.checked;
     showToast(state.muted ? '🔇 Voice speech muted' : '🔊 Voice speech enabled');
@@ -1177,14 +1157,8 @@ function initInput() {
   // ── ESCAPE KEY SHORTCUT ──
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      const pop = $('menu-popover');
-      const isl = $('response-island');
-      const pb = $('pill-plus-btn');
-      if (pop && pop.classList.contains('open')) {
-        pop.classList.remove('open');
-        if (pb) pb.classList.remove('active');
-      } else if (isl && isl.classList.contains('visible')) {
-        isl.classList.remove('visible');
+      if (popover && popover.classList.contains('open')) {
+        popover.classList.remove('open');
       }
     }
   });
@@ -1872,90 +1846,37 @@ async function fallbackAnswer(cmd) {
 // ─── UI HELPERS ──────────────────────────────────────────────────────────────
 
 function addMessage(type, text, icon, sender, mode) {
-  const div = document.createElement('div');
-  div.className = `msg ${type === 'user' ? 'user-msg' : 'jarvis-msg'}`;
-
-  const iconDiv = document.createElement('div');
-  iconDiv.className = 'msg-icon';
-  iconDiv.textContent = icon || (type === 'user' ? '👤' : '⬡');
-
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-
-  const senderSpan = document.createElement('span');
-  senderSpan.className = 'msg-sender';
-  senderSpan.textContent = type === 'user' ? (sender || 'YOU') : 'JENNIFER';
-
-  const p = document.createElement('p');
-  p.innerHTML = formatText(text);
-
-  bubble.appendChild(senderSpan);
-  bubble.appendChild(p);
-  div.appendChild(iconDiv);
-  div.appendChild(bubble);
-
-  // Remove typing indicator if present
-  const existing = convoFeed.querySelector('.typing-msg');
-  if (existing) convoFeed.removeChild(existing);
-
-  convoFeed.appendChild(div);
-  convoFeed.scrollTop = convoFeed.scrollHeight;
-
-  if (type === 'jarvis') {
+  if (type === 'user') {
+    const div = document.createElement('div');
+    div.className = 'user-msg';
+    div.innerHTML = formatText(text);
+    convoFeed.appendChild(div);
+  } else {
+    const div = document.createElement('div');
+    div.className = 'msg jarvis-msg';
+    div.innerHTML = `
+      <div class="pearl-orb msg-orb">
+        <div class="orb-specular"></div>
+      </div>
+      <div class="msg-content">${formatText(text)}</div>
+    `;
+    convoFeed.appendChild(div);
     state.lastAnswer = text;
   }
 
-  // Reveal floating response island
-  const island = $('response-island');
-  if (island) {
-    island.classList.add('visible');
-    island.setAttribute('aria-hidden', 'false');
-  }
-}
-
-function addTypingIndicator() {
-  const div = document.createElement('div');
-  div.className = 'msg jarvis-msg typing-msg';
-  div.innerHTML = `
-    <div class="msg-icon">⬡</div>
-    <div class="msg-bubble">
-      <span class="msg-sender">JENNIFER</span>
-      <div class="typing-indicator">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-      </div>
-    </div>`;
-  convoFeed.appendChild(div);
   convoFeed.scrollTop = convoFeed.scrollHeight;
-}
-
-function formatText(text) {
-  if (!text) return '';
-  return text
-    .replace(/```([a-zA-Z0-9]*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>');
 }
 
 function setThinking(on) {
   state.thinking = on;
+  const thinkingRow = $('thinking-row');
   if (on) {
-    arcReactor.classList.remove('listening');
-    arcReactor.classList.add('thinking');
-    hudStatus.textContent = 'PROCESSING...';
-    aiDot.className = 'ai-dot thinking';
-    $('ai-status-text').textContent = 'THINKING';
-    $('ai-status-text').style.color = '#ffd700';
-    addTypingIndicator();
+    if (thinkingRow) thinkingRow.style.display = 'flex';
+    convoFeed.scrollTop = convoFeed.scrollHeight;
+    if (aiDot) aiDot.className = 'agent-live-dot thinking';
   } else {
-    arcReactor.classList.remove('thinking');
-    hudStatus.textContent = 'STANDBY';
-    aiDot.className = 'ai-dot';
-    $('ai-status-text').textContent = 'READY';
-    $('ai-status-text').style.color = '#00ff88';
+    if (thinkingRow) thinkingRow.style.display = 'none';
+    if (aiDot) aiDot.className = 'agent-live-dot';
   }
 }
 
