@@ -13,13 +13,13 @@ let voiceProcess = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 1000,
-    minHeight: 700,
+    width: 920,
+    height: 680,
+    minWidth: 680,
+    minHeight: 460,
     frame: false,
     transparent: false,
-    backgroundColor: '#020c1b',
+    backgroundColor: '#0b0d12',
     icon: fs.existsSync(path.join(__dirname, 'assets', 'icon.png')) ? path.join(__dirname, 'assets', 'icon.png') : undefined,
     webPreferences: {
       nodeIntegration: false,

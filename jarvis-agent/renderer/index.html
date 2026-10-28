@@ -3,334 +3,266 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JENNIFER — Intelligent AI Assistant</title>
+  <title>Jennifer AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ══════════════════════ TITLEBAR ══════════════════════ -->
-<div class="titlebar" id="titlebar">
-  <div class="titlebar-drag">
-    <span class="titlebar-logo">⬡</span>
-    <span class="titlebar-title">JENNIFER</span>
-    <span class="titlebar-sub">UNIVERSAL PERSONAL AI ASSISTANT</span>
+  <!-- ══════════════════════ FLUTED GLASS BACKDROP ══════════════════════ -->
+  <div class="glass-backdrop" id="glass-backdrop">
+    <div class="glass-refraction-overlay"></div>
+    <div class="glass-light-accent"></div>
   </div>
-  <div class="titlebar-controls">
-    <button class="ctrl-btn minimize" id="btn-minimize" title="Minimize">─</button>
-    <button class="ctrl-btn maximize" id="btn-maximize" title="Maximize">□</button>
-    <button class="ctrl-btn close"    id="btn-close"    title="Close">✕</button>
-  </div>
-</div>
 
-<!-- ══════════════════════ MAIN LAYOUT ══════════════════════ -->
-<div class="app-layout">
+  <!-- ══════════════════════ MAIN WORKSPACE ══════════════════════ -->
+  <div class="app-stage" id="app-stage">
 
-  <!-- LEFT PANEL -->
-  <aside class="panel panel-left">
-    <div class="panel-header">SYSTEM STATUS</div>
-    <div class="stat-item">
-      <span class="stat-label">OPERATOR</span>
-      <span class="stat-value" id="stat-user">—</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">PLATFORM</span>
-      <span class="stat-value" id="stat-platform">—</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">CPU</span>
-      <span class="stat-value" id="stat-cpu">—</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">MEMORY</span>
-      <div class="stat-bar-wrap">
-        <div class="stat-bar" id="stat-mem-bar"></div>
+    <!-- ── TOP COMPACT HEADER / DRAG HANDLE ── -->
+    <header class="island-topbar" id="titlebar">
+      <div class="topbar-drag">
+        <span class="jennifer-badge">
+          <span class="pulse-dot" id="ai-dot"></span>
+          <span class="brand-name">JENNIFER</span>
+          <span class="model-tag" id="grok-active-model">Groq 120B</span>
+        </span>
       </div>
-      <span class="stat-value small" id="stat-mem">—</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">UPTIME</span>
-      <span class="stat-value small" id="stat-uptime">—</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">NETWORK</span>
-      <span class="stat-value" id="stat-network">—</span>
-    </div>
-
-    <div class="divider"></div>
-    <div class="panel-header">LIVE CLOCK</div>
-    <div class="live-time" id="live-time">00:00:00</div>
-    <div class="live-date" id="live-date">Loading...</div>
-    <div class="live-tz" id="live-tz"></div>
-
-    <div class="divider"></div>
-    <div class="panel-header">ASSISTANT TASKS</div>
-    <div class="quick-cmds">
-      <button class="qcmd" data-cmd="Explain quantum computing with an example">🔬 Research Topic</button>
-      <button class="qcmd" data-cmd="Write a Python script to download files asynchronously">💻 Write Code</button>
-      <button class="qcmd" data-cmd="What is the weather?">🌦 Live Weather</button>
-      <button class="qcmd" data-cmd="Calculate (150 * 12) / 4 + 85">🔢 Solve Math</button>
-      <button class="qcmd" data-cmd="Set a timer for 5 minutes">⏱ Set 5m Timer</button>
-      <button class="qcmd" data-cmd="Show system info">📊 System Specs</button>
-      <button class="qcmd" data-cmd="Open YouTube">▶ Open YouTube</button>
-      <button class="qcmd" data-cmd="What time is it?">⏰ Current Time</button>
-      <button class="qcmd" data-cmd="What can you do?">❓ All Capabilities</button>
-    </div>
-  </aside>
-
-  <!-- CENTER MAIN -->
-  <main class="center-main">
-
-    <!-- HUD RING -->
-    <div class="hud-container">
-      <div class="hud-ring hud-ring-outer"></div>
-      <div class="hud-ring hud-ring-mid"></div>
-      <div class="hud-ring hud-ring-inner"></div>
-      <div class="arc-reactor" id="arc-reactor">
-        <div class="arc-core"></div>
-        <div class="arc-glow"></div>
-      </div>
-      <div class="hud-status" id="hud-status">STANDBY</div>
-      <canvas class="wave-canvas" id="wave-canvas"></canvas>
-    </div>
-
-    <!-- CONVERSATION FEED -->
-    <div class="convo-feed" id="convo-feed">
-      <div class="msg jarvis-msg boot-msg">
-        <div class="msg-icon">⬡</div>
-        <div class="msg-bubble">
-          <span class="msg-sender">JENNIFER</span>
-          <p>Online and fully operational. I am <strong>Jennifer</strong> — your universal AI assistant. I can answer any question across science, coding, math, general research, and philosophy, as well as execute tasks, launch apps, solve equations, and control your system. How may I assist you?</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- INPUT AREA -->
-    <div class="input-zone">
-      <div class="input-wrap">
-        <span class="input-prefix">▷</span>
-        <input
-          type="text"
-          id="text-input"
-          class="text-input"
-          placeholder="Ask any question or assign any task..."
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="send-btn" id="send-btn" title="Send Command">
-          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      <div class="topbar-actions">
+        <button class="topbar-btn" id="btn-minimize" title="Minimize">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="topbar-btn" id="btn-maximize" title="Maximize / Restore">
+          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
         </button>
       </div>
-      <button class="mic-btn" id="mic-btn" title="Voice Command">
-        <div class="mic-icon">🎙</div>
-        <div class="mic-rings">
-          <div class="mic-ring r1"></div>
-          <div class="mic-ring r2"></div>
-          <div class="mic-ring r3"></div>
+    </header>
+
+    <!-- ── EXPANDABLE RESPONSE ISLAND (COLLAPSED BY DEFAULT) ── -->
+    <section class="response-island" id="response-island" aria-hidden="true">
+      <div class="island-header">
+        <div class="island-status">
+          <span class="status-indicator-dot"></span>
+          <span class="status-text" id="ai-status-text">READY</span>
         </div>
-      </button>
-    </div>
-
-  </main>
-
-  <!-- RIGHT PANEL -->
-  <aside class="panel panel-right">
-    <div class="panel-header">AI CORE STATUS</div>
-    <div class="ai-status-indicator">
-      <div class="ai-dot" id="ai-dot"></div>
-      <span id="ai-status-text">READY</span>
-    </div>
-
-    <!-- ─── GROK NEURAL CORE SECTION ─── -->
-    <div class="grok-section">
-      <div class="grok-header-row">
-        <div class="grok-title-group">
-          <span class="grok-title">GROK NEURAL CORE</span>
-          <span class="grok-sub">xAI Intelligence Engine</span>
+        <div class="island-controls">
+          <button class="icon-action-btn" id="btn-speak-toggle" title="Read response aloud">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </button>
+          <button class="icon-action-btn" id="btn-copy-answer" title="Copy response">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <button class="icon-action-btn" id="btn-clear-feed" title="Clear conversation">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <button class="icon-action-btn collapse-btn" id="btn-collapse-island" title="Collapse view">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
         </div>
-        <button class="grok-cfg-toggle" id="grok-cfg-toggle" title="Toggle Grok API Configuration">
-          ⚙ Config
+      </div>
+
+      <!-- Scrollable Message Conversation Stream -->
+      <div class="convo-feed" id="convo-feed">
+        <div class="msg jarvis-msg boot-msg">
+          <div class="msg-author">
+            <span class="author-dot"></span>
+            <span class="msg-sender">JENNIFER</span>
+          </div>
+          <div class="msg-body">
+            <p>I am <strong>Jennifer</strong>. What would you like to explore, create, or accomplish today?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Suggestion Pills -->
+      <div class="quick-prompts-bar" id="quick-prompts-bar">
+        <button class="prompt-chip qcmd" data-cmd="Explain quantum computing simply">🔬 Explain Quantum Computing</button>
+        <button class="prompt-chip qcmd" data-cmd="Write an async fetch script in JavaScript">💻 Code Snippet</button>
+        <button class="prompt-chip qcmd" data-cmd="What is the weather today?">🌦 Weather</button>
+        <button class="prompt-chip qcmd" data-cmd="Calculate 1450 * 18.5">🔢 Math Calculation</button>
+        <button class="prompt-chip qcmd" data-cmd="What can you do?">✨ Capabilities</button>
+      </div>
+    </section>
+
+    <!-- ── THE SLEEK FLOATING PILL BAR (EXACT REFERENCE DESIGN) ── -->
+    <div class="floating-bar-container" id="floating-bar-container">
+      
+      <!-- MAIN PILL -->
+      <div class="ai-pill" id="ai-pill">
+        <!-- PLUS ACTION BUTTON -->
+        <button class="pill-btn plus-btn" id="pill-plus-btn" title="Open AI Settings & Tools" aria-label="Open Tools">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
         </button>
-      </div>
 
-      <div class="grok-status-badge disconnected" id="grok-badge">
-        <span class="grok-dot"></span>
-        <span id="grok-badge-text">INITIALIZING...</span>
-      </div>
-
-      <div class="grok-info-row">
-        <span class="grok-info-label">MODEL:</span>
-        <span class="grok-info-val" id="grok-active-model">grok-2-latest</span>
-      </div>
-
-      <!-- Expandable Config Drawer -->
-      <div class="grok-drawer" id="grok-drawer">
-        <div class="grok-field-label">GROK API KEY (xAI):</div>
-        <div class="grok-key-wrap">
+        <!-- TEXT INPUT -->
+        <div class="pill-input-wrap">
           <input
-            type="password"
-            id="grok-key-input"
-            class="grok-input"
-            placeholder="Paste xai-... or set in .env"
+            type="text"
+            id="text-input"
+            class="pill-input"
+            placeholder="Ask AI"
             autocomplete="off"
             spellcheck="false"
           />
-          <button type="button" id="grok-toggle-vis-btn" class="grok-vis-btn" title="Show / Hide Key">👁</button>
         </div>
 
-        <div class="grok-field-label">MODEL SELECTION:</div>
-        <select id="grok-model-select" class="grok-select">
-          <option value="grok-2-latest">grok-2-latest (Recommended)</option>
-          <option value="grok-beta">grok-beta</option>
-          <option value="grok-2-1212">grok-2-1212</option>
-          <option value="grok-vision-beta">grok-vision-beta</option>
+        <!-- RIGHT ACTIONS: MIC & WAVEFORM -->
+        <div class="pill-right-actions">
+          <!-- MICROPHONE BUTTON -->
+          <button class="pill-btn mic-btn" id="mic-btn" title="Click or say 'Hey Jennifer' to talk" aria-label="Voice Input">
+            <svg class="mic-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+              <line x1="8" y1="22" x2="16" y2="22"></line>
+            </svg>
+            <span class="mic-glow-ring"></span>
+          </button>
+
+          <!-- AUDIO WAVEFORM BUTTON / EQUALIZER BARS -->
+          <button class="pill-btn wave-btn" id="wave-btn" title="Voice Waveform Visualizer" aria-label="Audio Visualizer">
+            <div class="eq-bars-wrap" id="eq-bars">
+              <span class="eq-bar bar-1"></span>
+              <span class="eq-bar bar-2"></span>
+              <span class="eq-bar bar-3"></span>
+              <span class="eq-bar bar-4"></span>
+              <span class="eq-bar bar-5"></span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- SEPARATE CIRCULAR CLOSE BUTTON (X) -->
+      <button class="pill-close-circle" id="btn-close" title="Close / Dismiss" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+    </div>
+
+    <!-- ── POPUP MENU DRAWER (OPENED VIA '+') ── -->
+    <div class="menu-popover" id="menu-popover" aria-hidden="true">
+      <div class="popover-header">
+        <span class="popover-title">AI ASSISTANT SETTINGS</span>
+        <span class="grok-status-badge connected" id="grok-badge">
+          <span class="grok-dot"></span>
+          <span id="grok-badge-text">GROQ CLOUD (ONLINE)</span>
+        </span>
+      </div>
+
+      <!-- Model Selection -->
+      <div class="popover-section">
+        <label class="pop-label" for="grok-model-select">ACTIVE NEURAL MODEL</label>
+        <select id="grok-model-select" class="pop-select">
+          <option value="openai/gpt-oss-120b" selected>GPT OSS 120B (Groq - High Intelligence)</option>
+          <option value="qwen/qwen3.8-27b">Qwen 3.8 27B (Groq - Ultra Fast)</option>
+          <option value="openai/gpt-oss-20b">GPT OSS 20B (Groq - Efficient)</option>
+          <option value="grok-2-latest">Grok 2 (xAI - Recommended)</option>
         </select>
+      </div>
 
-        <div class="grok-action-btns">
-          <button id="grok-save-btn" class="grok-btn primary">
-            💾 Save Link
-          </button>
-          <button id="grok-test-btn" class="grok-btn secondary">
-            ⚡ Test Link
-          </button>
+      <!-- Continuous Wake Word -->
+      <div class="popover-section row-split">
+        <div>
+          <div class="pop-heading">Wake Word ("Hey Jennifer")</div>
+          <div class="pop-sub">Listen continuously in background</div>
         </div>
-        <div class="grok-feedback" id="grok-feedback"></div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-    <div class="panel-header">VOICE &amp; ACTIVATION</div>
-    <div class="voice-info">
-      <div class="vi-row">
-        <span class="vi-label">ENGINE STATUS</span>
-        <span class="vi-val" id="voice-status">STANDBY</span>
-      </div>
-      <div class="vi-row">
-        <span class="vi-label">CONFIDENCE</span>
-        <span class="vi-val" id="voice-conf">—</span>
-      </div>
-      <div class="vi-row">
-        <span class="vi-label">LAST HEARD</span>
-        <span class="vi-val small" id="voice-last">—</span>
-      </div>
-    </div>
-
-    <!-- ─── WAKE WORD ACTIVATION SECTION ─── -->
-    <div class="wake-section">
-      <div class="wake-toggle-row">
-        <div class="wake-toggle-label">
-          <span class="wake-title">WAKE WORD ACTIVATION</span>
-          <span class="wake-desc">Say word to wake Jennifer</span>
-        </div>
-        <label class="hud-switch" title="Toggle automatic wake word listening">
+        <label class="hud-switch">
           <input type="checkbox" id="wake-toggle" checked />
           <span class="hud-slider"></span>
         </label>
       </div>
 
-      <div class="wake-status-badge active" id="wake-badge">
-        <span class="badge-dot"></span>
-        <span id="wake-badge-text">LISTENING FOR ACTIVATION</span>
-      </div>
-
-      <div class="wake-sub-header">
-        <span>ACTIVATION WORDS</span>
-        <span class="wake-count" id="wake-count">3 active</span>
-      </div>
-      <div class="wake-chips-container" id="wake-chips">
-        <!-- Rendered by JS -->
-      </div>
-
-      <div class="wake-input-row">
-        <input type="text" id="custom-wake-input" class="wake-input" placeholder="Add word (e.g. jarvis)..." maxlength="30" />
-        <button id="add-wake-btn" class="wake-add-btn" title="Add activation word">+</button>
-      </div>
-
-      <div class="wake-presets">
-        <span class="preset-label">PRESETS:</span>
-        <div class="preset-btns">
-          <button class="preset-btn" data-word="Jennifer">+ Jennifer</button>
-          <button class="preset-btn" data-word="Hey Jennifer">+ Hey Jennifer</button>
-          <button class="preset-btn" data-word="Jarvis">+ Jarvis</button>
-          <button class="preset-btn" data-word="Computer">+ Computer</button>
+      <!-- Speech Mute Toggle -->
+      <div class="popover-section row-split">
+        <div>
+          <div class="pop-heading">Voice Synthesis (TTS)</div>
+          <div class="pop-sub">Read answers aloud automatically</div>
         </div>
+        <label class="hud-switch">
+          <input type="checkbox" id="speech-toggle" checked />
+          <span class="hud-slider"></span>
+        </label>
       </div>
 
-      <div class="wake-audio-controls">
-        <button class="wake-test-btn" id="wake-test-btn" title="Test Jennifer wake-up sound & visual effect">
-          <span>🔔</span> Test Wake Chime
+      <!-- Expandable API Key Setup -->
+      <div class="popover-section">
+        <button class="pop-toggle-btn" id="grok-cfg-toggle">
+          <span>⚙ API Key Configuration</span>
+          <span class="arrow-indicator">▾</span>
         </button>
-      </div>
-    </div>
 
-    <!-- ─── VOICE SAMPLE & MIC CALIBRATION STUDIO ─── -->
-    <div class="divider"></div>
-    <div class="panel-header">VOICE SAMPLE &amp; CALIBRATION</div>
-    <div class="voice-sample-box">
-      <div class="vs-desc">Calibrate your mic &amp; verify what Jennifer hears:</div>
-
-      <button class="vs-record-btn" id="vs-record-btn">
-        <span class="vs-rec-dot"></span>
-        <span id="vs-record-label">🎙 Record Voice Sample (4s)</span>
-      </button>
-
-      <div class="vs-meter-wrap">
-        <div class="vs-meter-label">
-          <span>MIC VOLUME LEVEL:</span>
-          <span id="vs-vol-val">0%</span>
-        </div>
-        <div class="vs-meter-bar-bg">
-          <div class="vs-meter-bar" id="vs-meter-bar"></div>
+        <div class="grok-drawer" id="grok-drawer">
+          <div class="pop-label">API KEY (Groq or xAI):</div>
+          <div class="grok-key-wrap">
+            <input
+              type="password"
+              id="grok-key-input"
+              class="pop-input"
+              placeholder="Paste gsk_... or xai-..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button type="button" id="grok-toggle-vis-btn" class="grok-vis-btn">👁</button>
+          </div>
+          <div class="drawer-actions">
+            <button id="grok-save-btn" class="drawer-btn primary">💾 Save Key</button>
+            <button id="grok-test-btn" class="drawer-btn secondary">⚡ Test Link</button>
+          </div>
+          <div class="grok-feedback" id="grok-feedback"></div>
         </div>
       </div>
 
-      <div class="vs-playback-row" id="vs-playback-row" style="display: none;">
-        <button class="vs-play-btn" id="vs-play-btn">▶ Play Sample</button>
-        <audio id="vs-audio-player" style="display: none;"></audio>
+      <!-- System Telemetry Snapshot -->
+      <div class="popover-telemetry">
+        <div class="tel-item"><span class="tel-k">USER</span><span class="tel-v" id="stat-user">Operator</span></div>
+        <div class="tel-item"><span class="tel-k">PLATFORM</span><span class="tel-v" id="stat-platform">Windows</span></div>
+        <div class="tel-item"><span class="tel-k">CPU</span><span class="tel-v" id="stat-cpu">—</span></div>
+        <div class="tel-item"><span class="tel-k">MEMORY</span><span class="tel-v" id="stat-mem">—</span></div>
       </div>
-
-      <div class="vs-result-card" id="vs-result-card" style="display: none;">
-        <div class="vs-rc-label">RECOGNIZED SPEECH:</div>
-        <div class="vs-rc-text" id="vs-rc-text">—</div>
-        <div class="vs-rc-conf" id="vs-rc-conf">Accuracy: —</div>
-      </div>
-
-      <button class="vs-train-btn" id="vs-train-btn" title="Launch Windows Voice Training wizard to train your computer to your accent">
-        <span>🎯</span> Train Windows Speech on My Voice
-      </button>
     </div>
 
+  </div>
 
+  <!-- ══════════════════════ COMPATIBILITY HIDDEN REFS ══════════════════════ -->
+  <div style="display: none;" aria-hidden="true">
+    <button id="send-btn"></button>
+    <div id="arc-reactor"></div>
+    <div id="hud-status">STANDBY</div>
+    <div id="voice-status">STANDBY</div>
+    <div id="voice-conf">—</div>
+    <div id="voice-last">—</div>
+    <div id="session-log"></div>
+    <canvas id="wave-canvas"></canvas>
+    <div id="live-time"></div>
+    <div id="live-date"></div>
+    <div id="live-tz"></div>
+    <div id="stat-mem-bar"></div>
+    <div id="stat-uptime"></div>
+    <div id="stat-network"></div>
+  </div>
 
-    <div class="divider"></div>
-    <div class="panel-header">CAPABILITIES</div>
-    <ul class="cap-list">
-      <li>⚡ Grok AI Deep Reasoning</li>
-      <li>🕐 Time &amp; Date</li>
-      <li>🌍 Weather Lookup</li>
-      <li>🔢 Math &amp; Calculations</li>
-      <li>😂 Jokes &amp; Riddles</li>
-      <li>📖 General Knowledge</li>
-      <li>🌐 Open Websites</li>
-      <li>💻 System Stats</li>
-      <li>⏱ Set Timers</li>
-      <li>📰 Latest News</li>
-      <li>📐 Unit Conversion</li>
-      <li>🎵 Play Music</li>
-      <li>🌟 Motivational Quotes</li>
-    </ul>
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
 
-    <div class="divider"></div>
-    <div class="panel-header">SESSION LOG</div>
-    <div class="session-log" id="session-log">Session started...</div>
-  </aside>
-
-</div>
-
-<!-- TOAST NOTIFICATION -->
-<div class="toast" id="toast"></div>
-
-<script src="brain.js"></script>
+  <script src="brain.js"></script>
 </body>
 </html>

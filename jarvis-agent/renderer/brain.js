@@ -166,9 +166,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ─── WINDOW CONTROLS ─────────────────────────────────────────────────────────
 function initWindowControls() {
-  $('btn-minimize').addEventListener('click', () => window.jarvis.minimize());
-  $('btn-maximize').addEventListener('click', () => window.jarvis.maximize());
-  $('btn-close').addEventListener('click', () => window.jarvis.close());
+  $('btn-minimize')?.addEventListener('click', () => window.jarvis?.minimize && window.jarvis.minimize());
+  $('btn-maximize')?.addEventListener('click', () => window.jarvis?.maximize && window.jarvis.maximize());
+
+  const closeBtn = $('btn-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      const popover = $('menu-popover');
+      const island = $('response-island');
+      const plusBtn = $('pill-plus-btn');
+
+      if (popover && popover.classList.contains('open')) {
+        popover.classList.remove('open');
+        if (plusBtn) plusBtn.classList.remove('active');
+        return;
+      }
+      if (island && island.classList.contains('visible')) {
+        island.classList.remove('visible');
+        island.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      if (window.jarvis?.close) {
+        window.jarvis.close();
+      }
+    });
+  }
 }
 
 // ─── LIVE CLOCK ──────────────────────────────────────────────────────────────
@@ -1064,24 +1086,105 @@ async function queryGrok(prompt) {
 
 // ─── INPUT HANDLING ─────────────────────────────────────────────────────────
 function initInput() {
-  sendBtn.addEventListener('click', submitText);
-  textInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitText(); }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (state.historyIndex < state.commandHistory.length - 1) {
-        state.historyIndex++;
-        textInput.value = state.commandHistory[state.commandHistory.length - 1 - state.historyIndex] || '';
+  if (sendBtn) sendBtn.addEventListener('click', submitText);
+  if (textInput) {
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitText(); }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (state.historyIndex < state.commandHistory.length - 1) {
+          state.historyIndex++;
+          textInput.value = state.commandHistory[state.commandHistory.length - 1 - state.historyIndex] || '';
+        }
       }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (state.historyIndex > 0) {
+          state.historyIndex--;
+          textInput.value = state.commandHistory[state.commandHistory.length - 1 - state.historyIndex] || '';
+        } else {
+          state.historyIndex = -1;
+          textInput.value = '';
+        }
+      }
+    });
+  }
+
+  // ── PILL PLUS BUTTON (POPOVER TOGGLE) ──
+  const plusBtn = $('pill-plus-btn');
+  const popover = $('menu-popover');
+  if (plusBtn && popover) {
+    plusBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = popover.classList.toggle('open');
+      plusBtn.classList.toggle('active', isOpen);
+      popover.setAttribute('aria-hidden', !isOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!popover.contains(e.target) && !plusBtn.contains(e.target) && popover.classList.contains('open')) {
+        popover.classList.remove('open');
+        plusBtn.classList.remove('active');
+        popover.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  // ── WAVEFORM BUTTON (TOGGLE VOICE / SPEECH) ──
+  const waveBtn = $('wave-btn');
+  if (waveBtn) {
+    waveBtn.addEventListener('click', () => {
+      toggleListening();
+    });
+  }
+
+  // ── RESPONSE ISLAND ACTIONS ──
+  $('btn-collapse-island')?.addEventListener('click', () => {
+    const island = $('response-island');
+    if (island) {
+      island.classList.remove('visible');
+      island.setAttribute('aria-hidden', 'true');
     }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (state.historyIndex > 0) {
-        state.historyIndex--;
-        textInput.value = state.commandHistory[state.commandHistory.length - 1 - state.historyIndex] || '';
-      } else {
-        state.historyIndex = -1;
-        textInput.value = '';
+  });
+
+  $('btn-clear-feed')?.addEventListener('click', () => {
+    convoFeed.innerHTML = '';
+    const island = $('response-island');
+    if (island) island.classList.remove('visible');
+    showToast('Conversation cleared');
+  });
+
+  $('btn-copy-answer')?.addEventListener('click', () => {
+    if (state.lastAnswer) {
+      navigator.clipboard.writeText(state.lastAnswer);
+      showToast('✓ Response copied to clipboard!');
+    } else {
+      showToast('No response to copy yet');
+    }
+  });
+
+  $('btn-speak-toggle')?.addEventListener('click', () => {
+    if (state.lastAnswer) {
+      speak(state.lastAnswer);
+    }
+  });
+
+  $('speech-toggle')?.addEventListener('change', (e) => {
+    state.muted = !e.target.checked;
+    showToast(state.muted ? '🔇 Voice speech muted' : '🔊 Voice speech enabled');
+  });
+
+  // ── ESCAPE KEY SHORTCUT ──
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const pop = $('menu-popover');
+      const isl = $('response-island');
+      const pb = $('pill-plus-btn');
+      if (pop && pop.classList.contains('open')) {
+        pop.classList.remove('open');
+        if (pb) pb.classList.remove('active');
+      } else if (isl && isl.classList.contains('visible')) {
+        isl.classList.remove('visible');
       }
     }
   });
@@ -1797,6 +1900,17 @@ function addMessage(type, text, icon, sender, mode) {
 
   convoFeed.appendChild(div);
   convoFeed.scrollTop = convoFeed.scrollHeight;
+
+  if (type === 'jarvis') {
+    state.lastAnswer = text;
+  }
+
+  // Reveal floating response island
+  const island = $('response-island');
+  if (island) {
+    island.classList.add('visible');
+    island.setAttribute('aria-hidden', 'false');
+  }
 }
 
 function addTypingIndicator() {
@@ -1817,10 +1931,12 @@ function addTypingIndicator() {
 }
 
 function formatText(text) {
+  if (!text) return '';
   return text
+    .replace(/```([a-zA-Z0-9]*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\n/g, '<br>');
 }
 
