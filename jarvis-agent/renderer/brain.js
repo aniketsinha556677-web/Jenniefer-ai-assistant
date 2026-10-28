@@ -836,15 +836,21 @@ async function initGrokCore() {
   const updateUIFromConfig = (cfg) => {
     state.grok.hasKey = !!cfg.hasKey;
     state.grok.maskedKey = cfg.maskedKey || '';
-    state.grok.model = cfg.model || 'grok-2-latest';
+    state.grok.model = cfg.model || 'openai/gpt-oss-120b';
 
     if (activeModel) activeModel.textContent = state.grok.model;
-    if (modelSelect && cfg.model) modelSelect.value = cfg.model;
+
+    if (modelSelect && cfg.models && cfg.models.length) {
+      modelSelect.innerHTML = cfg.models.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+      modelSelect.value = state.grok.model;
+    } else if (modelSelect && cfg.model) {
+      modelSelect.value = cfg.model;
+    }
 
     if (badge && badgeText) {
       if (cfg.hasKey) {
         badge.className = 'grok-status-badge connected';
-        badgeText.textContent = `GROK-2 ONLINE (${state.grok.model})`;
+        badgeText.textContent = `${(cfg.providerName || 'AI CORE').toUpperCase()} ONLINE (${state.grok.model})`;
       } else {
         badge.className = 'grok-status-badge autonomous';
         badgeText.textContent = 'AUTONOMOUS AI (ONLINE)';
@@ -855,7 +861,7 @@ async function initGrokCore() {
       if (cfg.hasKey) {
         keyInput.placeholder = `Configured: ${cfg.maskedKey}`;
       } else {
-        keyInput.placeholder = 'Paste xai-... to connect Grok-2';
+        keyInput.placeholder = 'Paste Groq (gsk_...) or xAI (xai-...) key';
       }
     }
   };
@@ -887,12 +893,12 @@ async function initGrokCore() {
   // Save Link
   saveBtn?.addEventListener('click', async () => {
     const rawKey = keyInput?.value?.trim();
-    const selModel = modelSelect?.value || 'grok-2-latest';
+    const selModel = modelSelect?.value || state.grok.model;
 
     if (!rawKey && !state.grok.hasKey) {
       if (feedback) {
         feedback.className = 'grok-feedback error';
-        feedback.textContent = 'Please enter your Grok API key (starts with xai-)';
+        feedback.textContent = 'Please enter your API key (starts with gsk_ or xai-)';
       }
       return;
     }
@@ -915,7 +921,7 @@ async function initGrokCore() {
             feedback.className = 'grok-feedback success';
             feedback.textContent = `✓ Link online (${testRes.latencyMs}ms latency)`;
           }
-          showToast(`⚡ Grok Neural Link online (${selModel})`);
+          showToast(`⚡ Neural Link online (${selModel})`);
         } else {
           if (feedback) {
             feedback.className = 'grok-feedback error';

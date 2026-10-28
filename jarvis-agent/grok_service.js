@@ -10,15 +10,68 @@ const path = require('path');
 const axios = require('axios');
 
 const XAI_API_URL = 'https://api.x.ai/v1/chat/completions';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const ENV_FILE_PATH = path.join(__dirname, '.env');
 
 // In-memory config cache
 let grokConfig = {
   apiKey: process.env.GROK_API_KEY || process.env.XAI_API_KEY || '',
-  model: process.env.GROK_MODEL || 'grok-2-latest',
+  model: process.env.GROK_MODEL || 'openai/gpt-oss-120b',
   temperature: 0.7,
   maxTokens: 2048,
 };
+
+/**
+ * Determine AI provider and appropriate endpoint from API key prefix
+ */
+function getProviderDetails(key, requestedModel) {
+  const cleanKey = (key || '').trim();
+  if (cleanKey.startsWith('gsk_')) {
+    let model = requestedModel;
+    if (!model || model.startsWith('grok-')) {
+      model = 'openai/gpt-oss-120b';
+    }
+    return {
+      provider: 'groq',
+      providerName: 'Groq Cloud',
+      apiUrl: GROQ_API_URL,
+      key: cleanKey,
+      model,
+      availableModels: [
+        { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B (Groq - High Intelligence)' },
+        { id: 'qwen/qwen3.8-27b', name: 'Qwen 3.8 27B (Groq - Ultra Fast)' },
+        { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B (Groq - Efficient)' }
+      ]
+    };
+  } else if (cleanKey.startsWith('xai-')) {
+    let model = requestedModel;
+    if (!model || !model.startsWith('grok-')) {
+      model = 'grok-2-latest';
+    }
+    return {
+      provider: 'grok',
+      providerName: 'xAI Grok',
+      apiUrl: XAI_API_URL,
+      key: cleanKey,
+      model,
+      availableModels: [
+        { id: 'grok-2-latest', name: 'Grok 2 (xAI - Recommended)' },
+        { id: 'grok-beta', name: 'Grok Beta' },
+        { id: 'grok-2-1212', name: 'Grok 2 (Dec 2024)' },
+        { id: 'grok-vision-beta', name: 'Grok Vision Beta' }
+      ]
+    };
+  } else {
+    return {
+      provider: 'autonomous',
+      providerName: 'Autonomous Core',
+      apiUrl: null,
+      key: cleanKey,
+      model: 'autonomous',
+      availableModels: []
+    };
+  }
+}
 
 /**
  * Parse .env file manually without external dependency
@@ -115,17 +168,19 @@ function getConfig() {
     ? `${rawKey.slice(0, 4)}...${rawKey.slice(-4)}` 
     : (rawKey ? '••••••••' : '');
   
+  const details = getProviderDetails(rawKey, grokConfig.model);
+
   return {
     hasKey: !!rawKey,
-    provider: rawKey ? 'grok' : 'autonomous',
+    provider: details.provider,
+    providerName: details.providerName,
     maskedKey,
-    model: grokConfig.model,
+    model: details.model,
     temperature: grokConfig.temperature,
-    models: [
-      { id: 'grok-2-latest', name: 'Grok 2 (Latest - Recommended)' },
-      { id: 'grok-beta', name: 'Grok Beta' },
-      { id: 'grok-2-1212', name: 'Grok 2 (Dec 2024 Release)' },
-      { id: 'grok-vision-beta', name: 'Grok Vision Beta' }
+    models: details.availableModels.length > 0 ? details.availableModels : [
+      { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B (Groq - Recommended)' },
+      { id: 'qwen/qwen3.8-27b', name: 'Qwen 3.8 27B (Groq - Ultra Fast)' },
+      { id: 'grok-2-latest', name: 'Grok 2 (xAI - Recommended)' }
     ]
   };
 }
@@ -134,51 +189,52 @@ function getConfig() {
  * Validate / test the API key with a ping
  */
 async function testKey(providedKey, providedModel) {
-  const keyToTest = providedKey || grokConfig.apiKey;
-  const modelToTest = providedModel || grokConfig.model || 'grok-2-latest';
+  const keyToTest = (providedKey || grokConfig.apiKey || '').trim();
+  const details = getProviderDetails(keyToTest, providedModel || grokConfig.model);
 
   if (!keyToTest) {
-    return { success: false, error: 'No Grok API key provided.' };
+    return { success: false, error: 'No API key provided.' };
   }
 
-  if (!keyToTest.startsWith('xai-')) {
+  if (details.provider === 'autonomous') {
     return {
       success: false,
-      error: `Invalid key format. xAI Grok API keys must start with "xai-" (your key starts with "${keyToTest.slice(0, Math.min(6, keyToTest.length))}..."). Please obtain a key from https://console.x.ai`
+      error: `Unrecognized API key prefix (starts with "${keyToTest.slice(0, 5)}..."). Supported keys: Groq ("gsk_...") or xAI Grok ("xai-...").`
     };
   }
 
   const startTime = Date.now();
   try {
     const response = await axios.post(
-      XAI_API_URL,
+      details.apiUrl,
       {
-        model: modelToTest,
+        model: details.model,
         messages: [
           { role: 'system', content: 'You are a test ping. Respond with only one word: ONLINE' },
           { role: 'user', content: 'Ping' }
         ],
-        max_tokens: 10,
+        max_tokens: 15,
         temperature: 0.1
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${keyToTest.trim()}`
+          'Authorization': `Bearer ${details.key}`
         },
         timeout: 15000
       }
     );
 
     const latency = Date.now() - startTime;
-    const reply = response.data?.choices?.[0]?.message?.content || 'OK';
+    const reply = response.data?.choices?.[0]?.message?.content || 'ONLINE';
 
     return {
       success: true,
       latencyMs: latency,
       reply: reply.trim(),
-      model: modelToTest,
-      message: `Neural link verified (${latency}ms latency). Grok is fully operational.`
+      model: details.model,
+      provider: details.provider,
+      message: `Neural link verified (${latency}ms latency). ${details.providerName} (${details.model}) is fully operational.`
     };
   } catch (err) {
     let message = err.message;
@@ -186,24 +242,21 @@ async function testKey(providedKey, providedModel) {
       const status = err.response.status;
       const data = err.response.data;
       if (status === 401) {
-        message = 'Invalid Grok API key. Please double-check your xAI credentials.';
+        message = `Invalid ${details.providerName} API key. Please check your credentials.`;
       } else if (status === 400) {
-        // xAI returns 400 (not 401) when the key format is wrong
         const apiMsg = typeof data?.error === 'string' ? data.error : data?.error?.message || data?.message || '';
-        message = apiMsg
-          ? `API key rejected by xAI: ${apiMsg}`
-          : 'API key format is invalid. xAI keys must start with "xai-". Get a valid key from https://console.x.ai';
+        message = apiMsg ? `API error: ${apiMsg}` : `Request format rejected by ${details.providerName}.`;
       } else if (status === 404) {
-        message = `Model "${modelToTest}" not found or not enabled for your account.`;
+        message = `Model "${details.model}" not found on ${details.providerName}.`;
       } else if (status === 429) {
-        message = 'Rate limit reached on xAI API. Please wait a moment or check your account quota.';
+        message = `Rate limit reached on ${details.providerName}. Please wait a moment.`;
       } else if (data && data.error) {
         message = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
       }
     } else if (err.code === 'ECONNABORTED') {
       message = 'Request timed out. Check your internet connection.';
     } else if (err.code === 'ENOTFOUND') {
-      message = 'Cannot reach api.x.ai — check your network connection.';
+      message = 'Cannot reach API servers — check your network connection.';
     }
     return { success: false, error: message };
   }
@@ -467,32 +520,21 @@ async function chat(params = {}) {
   const history = params.history || [];
   const options = params.options || {};
   loadEnv();
-  const apiKey = options.apiKey || grokConfig.apiKey;
-  const model = options.model || grokConfig.model || 'grok-2-latest';
+  const apiKey = (options.apiKey || grokConfig.apiKey || '').trim();
+  const requestedModel = options.model || grokConfig.model;
   const temperature = options.temperature !== undefined ? options.temperature : 0.7;
 
-  // If no Grok API key is configured, use the autonomous knowledge engine
-  if (!apiKey) {
+  // Determine provider from key
+  const details = getProviderDetails(apiKey, requestedModel);
+
+  // If no API key configured or unrecognized format, use autonomous knowledge engine
+  if (!apiKey || details.provider === 'autonomous') {
     return await autonomousKnowledgeAnswer(prompt, options);
   }
 
-  // If key does not start with "xai-", use Autonomous Core and provide a clear note
-  if (!apiKey.startsWith('xai-')) {
-    console.warn('[GrokService] Key does not start with "xai-". Answering via Autonomous Knowledge Core.');
-    const fallbackRes = await autonomousKnowledgeAnswer(prompt, options);
-    fallbackRes.note = `xAI API key must start with "xai-" (detected "${apiKey.slice(0, 5)}..."). Answered via Autonomous Core. Get an official key from https://console.x.ai`;
-    if (fallbackRes.text) {
-      fallbackRes.text += `\n\n*⚠️ Note: Grok API key was bypassed because xAI keys must start with \`xai-\` (got \`${apiKey.slice(0, 5)}...\`). Answered via Jennifer Autonomous Core. You can update your key at https://console.x.ai.*`;
-    }
-    return fallbackRes;
-  }
-
-  // Build message array for xAI Grok
+  // Build message array
   const systemPrompt = options.systemPrompt || buildUniversalAssistantPrompt(options.userName || 'Sir');
-
-  // Keep last 20 history messages (10 exchanges) to maintain context without overflowing context window
   const trimmedHistory = history.slice(-20);
-
   const messages = [
     { role: 'system', content: systemPrompt },
     ...trimmedHistory,
@@ -501,9 +543,9 @@ async function chat(params = {}) {
 
   try {
     const response = await axios.post(
-      XAI_API_URL,
+      details.apiUrl,
       {
-        model,
+        model: details.model,
         messages,
         temperature,
         max_tokens: options.maxTokens || 2048
@@ -511,56 +553,54 @@ async function chat(params = {}) {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey.trim()}`
+          'Authorization': `Bearer ${details.key}`
         },
         timeout: 30000
       }
     );
 
     const choice = response.data?.choices?.[0];
-    const text = choice?.message?.content || 'No response received from Grok neural core.';
+    const text = choice?.message?.content || 'No response received from neural core.';
     const usage = response.data?.usage || null;
 
     return {
       success: true,
       text,
-      model,
-      provider: 'grok',
+      model: details.model,
+      provider: details.provider,
+      providerName: details.providerName,
       usage
     };
   } catch (err) {
-    // Extract the real error message from the API response if available
     const status = err.response?.status;
     const apiError = err.response?.data?.error || err.response?.data?.message;
 
-    // For auth failures (400/401/403), answer with Autonomous Core and append explanation
+    // For auth/request failures, answer with Autonomous Core and append explanation
     if (status === 400 || status === 401 || status === 403) {
       const msg = typeof apiError === 'string'
         ? apiError
-        : (apiError?.message || `API authentication failed (HTTP ${status}). Please verify your key at https://console.x.ai — xAI keys must start with "xai-".`);
-      console.warn('[GrokService] API authentication error, using autonomous fallback:', msg);
+        : (apiError?.message || `API error (HTTP ${status}).`);
+      console.warn(`[GrokService] ${details.providerName} authentication error, using autonomous fallback:`, msg);
       const fallbackRes = await autonomousKnowledgeAnswer(prompt, options);
-      fallbackRes.note = `xAI authentication failed (${msg}). Answered via Autonomous Core.`;
+      fallbackRes.note = `${details.providerName} authentication failed (${msg}). Answered via Autonomous Core.`;
       if (fallbackRes.text) {
-        fallbackRes.text += `\n\n*⚠️ Note: xAI returned authentication error (${msg}). Answered via Jennifer Autonomous Core. You can update your key at https://console.x.ai.*`;
+        fallbackRes.text += `\n\n*⚠️ Note: ${details.providerName} request returned error (${msg}). Answered via Jennifer Autonomous Core.*`;
       }
       return fallbackRes;
     }
 
-    // For rate limits, surface the error too
     if (status === 429) {
       return {
         success: false,
-        error: 'Rate limit reached. Please wait a moment before sending another message.',
-        provider: 'grok',
+        error: `Rate limit reached on ${details.providerName}. Please wait a moment.`,
+        provider: details.provider,
         rateLimited: true
       };
     }
 
-    // For network/timeout errors only, fall back to autonomous knowledge engine
-    console.warn('[GrokService] Grok API temporarily unavailable, switching to autonomous fallback:', err.message);
+    console.warn(`[GrokService] ${details.providerName} temporarily unavailable, switching to autonomous fallback:`, err.message);
     const fallbackRes = await autonomousKnowledgeAnswer(prompt, options);
-    fallbackRes.note = `xAI temporarily unavailable (${err.message}). Using autonomous knowledge engine.`;
+    fallbackRes.note = `${details.providerName} temporarily unavailable (${err.message}). Using autonomous knowledge engine.`;
     return fallbackRes;
   }
 }
