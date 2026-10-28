@@ -141,6 +141,13 @@ async function testKey(providedKey, providedModel) {
     return { success: false, error: 'No Grok API key provided.' };
   }
 
+  if (!keyToTest.startsWith('xai-')) {
+    return {
+      success: false,
+      error: `Invalid key format. xAI Grok API keys must start with "xai-" (your key starts with "${keyToTest.slice(0, Math.min(6, keyToTest.length))}..."). Please obtain a key from https://console.x.ai`
+    };
+  }
+
   const startTime = Date.now();
   try {
     const response = await axios.post(
@@ -469,9 +476,15 @@ async function chat(params = {}) {
     return await autonomousKnowledgeAnswer(prompt, options);
   }
 
-  // Warn if the key doesn't look like a valid xAI key
+  // If key does not start with "xai-", use Autonomous Core and provide a clear note
   if (!apiKey.startsWith('xai-')) {
-    console.warn('[GrokService] WARNING: API key does not start with "xai-". xAI keys must start with "xai-". Get a valid key from https://console.x.ai');
+    console.warn('[GrokService] Key does not start with "xai-". Answering via Autonomous Knowledge Core.');
+    const fallbackRes = await autonomousKnowledgeAnswer(prompt, options);
+    fallbackRes.note = `xAI API key must start with "xai-" (detected "${apiKey.slice(0, 5)}..."). Answered via Autonomous Core. Get an official key from https://console.x.ai`;
+    if (fallbackRes.text) {
+      fallbackRes.text += `\n\n*⚠️ Note: Grok API key was bypassed because xAI keys must start with \`xai-\` (got \`${apiKey.slice(0, 5)}...\`). Answered via Jennifer Autonomous Core. You can update your key at https://console.x.ai.*`;
+    }
+    return fallbackRes;
   }
 
   // Build message array for xAI Grok
@@ -520,18 +533,18 @@ async function chat(params = {}) {
     const status = err.response?.status;
     const apiError = err.response?.data?.error || err.response?.data?.message;
 
-    // For auth failures (400/401/403), do NOT fall back to autonomous — surface the error clearly
+    // For auth failures (400/401/403), answer with Autonomous Core and append explanation
     if (status === 400 || status === 401 || status === 403) {
       const msg = typeof apiError === 'string'
         ? apiError
-        : (apiError?.message || `API authentication failed (HTTP ${status}). Please verify your API key at https://console.x.ai — xAI keys must start with "xai-".`);
-      console.error('[GrokService] API authentication error:', msg);
-      return {
-        success: false,
-        error: msg,
-        provider: 'grok',
-        authError: true
-      };
+        : (apiError?.message || `API authentication failed (HTTP ${status}). Please verify your key at https://console.x.ai — xAI keys must start with "xai-".`);
+      console.warn('[GrokService] API authentication error, using autonomous fallback:', msg);
+      const fallbackRes = await autonomousKnowledgeAnswer(prompt, options);
+      fallbackRes.note = `xAI authentication failed (${msg}). Answered via Autonomous Core.`;
+      if (fallbackRes.text) {
+        fallbackRes.text += `\n\n*⚠️ Note: xAI returned authentication error (${msg}). Answered via Jennifer Autonomous Core. You can update your key at https://console.x.ai.*`;
+      }
+      return fallbackRes;
     }
 
     // For rate limits, surface the error too
@@ -550,6 +563,7 @@ async function chat(params = {}) {
     fallbackRes.note = `xAI temporarily unavailable (${err.message}). Using autonomous knowledge engine.`;
     return fallbackRes;
   }
+}
 
 module.exports = {
   loadEnv,
